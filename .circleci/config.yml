@@ -14,16 +14,27 @@ jobs:
     executor: node/default
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: GATSBY_TARGET_ENV=$CIRCLE_BRANCH npm run deploy
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Github credentials # TODO: It fix the ssh problem but need to be updated
+          command: git config user.email "circleci@circleci.com"
+      - run:
+          name: Github credentials
+          command: git config user.name "circleci"
+      - add_ssh_keys:
+          fingerprints:
+            - "3f:87:ff:07:bd:dc:72:d4:f0:b3:70:62:e7:a3:b1:4e"
+      - run:
+          name: Deploy Application
+          command: npm run deploy
+
 workflows:
   stack:
     jobs:
       - tests
       - deploy:
-          context: AWS Access Key
           requires:
             - tests
           filters:
