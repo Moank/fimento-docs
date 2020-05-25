@@ -6,3 +6,8 @@ jobs:
     executor: node/default
     steps:
       - run: echo "auto deploy"
+
+workflows:
+  stack:
+    jobs:
+      - deploy
