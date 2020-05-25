@@ -18,13 +18,13 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `gatsby-starter-default`,
-        short_name: `starter`,
+        name: `Fimento`,
+        short_name: `Fimento`,
         start_url: `/`,
-        background_color: `#663399`,
-        theme_color: `#663399`,
-        display: `minimal-ui`,
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+        background_color: `#f2f0ed`,
+        theme_color: `#DBC9C6`,
+        display: `standalone`,
+        icon: `src/images/logo-black.svg`,
       },
     },
     // this (optional) plugin enables Progressive Web App + Offline functionality
