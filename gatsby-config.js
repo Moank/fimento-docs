@@ -4,6 +4,7 @@ module.exports = {
     description: `Some fanci description to update`,
     author: `Fimento`,
   },
+  pathPrefix: "/fimento-docs", // TODO: remove when custom domain is added
   plugins: [
     `gatsby-plugin-react-helmet`,
     {
