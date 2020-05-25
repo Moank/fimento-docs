@@ -33,7 +33,7 @@
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 0",
-    "predeploy": "gatsby build --prefix-paths",
+    "predeploy": "gatsby build",
     "deploy": "gh-pages -d public"
   }
 }
