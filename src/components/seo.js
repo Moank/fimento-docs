@@ -68,7 +68,9 @@ function SEO({ description, lang, meta, title }) {
           content: metaDescription,
         },
       ].concat(meta)}
-    />
+    >
+      <link data-n-head="ssr" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&amp;display=swap"></link>
+    </Helmet>
   )
 }
 
