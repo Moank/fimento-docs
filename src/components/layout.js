@@ -1,46 +1,45 @@
-import React from "react"
+import React from "react";
 import styled from 'styled-components';
+import PropTypes from "prop-types";
 
-import PropTypes from "prop-types"
-import { useStaticQuery, graphql } from "gatsby"
+import Header from "./header";
+import Footer from "./footer";
+import GlobalStyle from './GlobalStyle';
 
-import Header from "./header"
 
-import "./layout.css"
+const StyledLayout = styled('main')`
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 
-const StyledLayout = styled('main')``;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+`;
 
-const Layout = ({ children }) => {
-  const data = useStaticQuery(graphql`
-    query SiteTitleQuery {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-    }
-  `)
+const StyledContent = styled('div')`
+  width: calc(100% - 40px);
+  margin: 20px;
 
-  return (
-    <StyledLayout>
-      <Header siteTitle={data.site.siteMetadata.title} />
-      <div
-        style={{
-          margin: `0 auto`,
-          maxWidth: 960,
-          padding: `0 1.0875rem 1.45rem`,
-        }}
-      >
-        <main>{children}</main>
-      </div>
-      <footer>
-        © {new Date().getFullYear()}, Built with
-        {` `}
-        <a href="https://www.gatsbyjs.org">Gatsby</a>
-      </footer>
-    </StyledLayout>
-  )
-}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+`;
+
+const Layout = ({ children }) => (
+  <StyledLayout>
+    <GlobalStyle />
+    <Header />
+    <StyledContent>
+      {children}
+    </StyledContent>
+    <Footer />
+  </StyledLayout>
+);
 
 Layout.propTypes = {
   children: PropTypes.node.isRequired,
