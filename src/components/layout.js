@@ -20,8 +20,7 @@ const StyledLayout = styled('main')`
 `;
 
 const StyledContent = styled('div')`
-  width: calc(100% - 40px);
-  margin: 20px;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
