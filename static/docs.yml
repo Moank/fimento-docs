@@ -1,0 +1,337 @@
+openapi: 3.0.0
+info:
+  description: |
+    API for Låntagarnas callback service. Used by cooperating lenders to respond to loan applications submitted by Låntagarnas. Lenders can respond to the loan application by posting loan offers, rejections and payout confirmations.
+    
+    ID definition\
+      `loanApplicationId` → Låntagarnas internal ID \
+      `lenderLoanApplicationId` → Lender's internal ID
+  version: 1.0.0
+  title: Låntagarnas Callback REST API
+servers:
+- url: https://api.lantagarnas.se/{lenderName}
+  description: Prod
+  variables:
+    lenderName:
+      default: bankXYZ
+- url: https://api.test.lantagarnas.se/{lenderName}
+  description: Test
+  variables:
+    lenderName:
+      default: bankXYZ
+paths:
+  /offers:
+    post:
+      tags:
+      - Endpoints
+      summary: Approve the loan application and create a loan offer 
+      requestBody:
+        $ref: "#/components/requestBodies/offer"
+      responses:
+        201:
+          $ref: "#/components/responses/createOffer"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/badRequestBody"
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/conflictBody"
+      security:
+      - basic_auth: []
+      
+  /rejections:
+      post:
+        tags:
+        - Endpoints
+        summary: Reject the loan application 
+        requestBody:
+          $ref: "#/components/requestBodies/rejection"
+        responses:
+          201:
+            $ref: "#/components/responses/createRejection"
+          409:
+            description: Conflict
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/conflictBody"
+        security:
+        - basic_auth: []
+  
+  /payouts:
+      post:
+        tags:
+        - Endpoints
+        summary: Register loan payout 
+        requestBody:
+          $ref: "#/components/requestBodies/payout"
+        responses:
+          201:
+            $ref: "#/components/responses/createPayout"
+          400:
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/badRequestBody"
+          409:
+            description: Conflict
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/conflictBody"
+        security:
+        - basic_auth: []
+  
+components:
+  requestBodies:
+    offer:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - offer
+            properties: 
+              loanApplicationId:
+                type: string
+                description: loanApplication's id as set by Låntagarnas when submitting the loan application to the lender. If present, lenderLoanApplicationId is ignored.
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              lenderLoanApplicationId:
+                type: string
+                description: loanApplication's id as responded by lender when receiving the loan application from Låntagarna. Required if loanApplicationId is omitted. 
+                example: "12345678"
+              offer: 
+                  $ref: "#/components/schemas/offer"
+    rejection: 
+      required: true
+      content: 
+        application/json:
+          schema:
+            type: object
+            properties: 
+              loanApplicationId:
+                type: string
+                description: loanApplication's id as set by Låntagarnas when submitting the loan application to the lender. If present, lenderLoanApplicationId is ignored.
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              lenderLoanApplicationId:
+                type: string
+                description: loanApplication's id as responded by lender when receiving the loan application from Låntagarna. Required if loanApplicationId is omitted. 
+                example: "12345678"
+            
+    payout:
+      required: true
+      content: 
+        application/json:
+          schema: 
+            type: object
+            required: 
+            - payout
+            properties: 
+              loanApplicationId:
+                type: string
+                description: loanApplication's id as set by Låntagarnas when submitting the loan application to the lender. If present, lenderLoanApplicationId is ignored.
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              lenderLoanApplicationId:
+                type: string
+                description: loanApplication's id as responded by lender when receiving the loan application from Låntagarna. Required if loanApplicationId is omitted. 
+                example: "12345678"
+              payout: 
+                $ref: "#/components/schemas/payout"
+      
+  responses:
+    createOffer:
+      description: OK. New resource created. 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              loanApplicationId:
+                type: string
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              status: 
+                type: string
+                example: approved
+              offer: 
+                $ref: "#/components/schemas/offer"
+    createRejection:
+      description: OK. New resource created. 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              loanApplicationId:
+                type: string
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              status: 
+                type: string
+                example: rejected
+    createPayout:
+      description: OK. New resource created. 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              loanApplicationId:
+                type: string
+                example: aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+              status: 
+                type: string
+                example: payout
+              loan:
+                $ref: "#/components/schemas/payout"
+                  
+
+  schemas:
+    offer:
+      type: object
+      required:
+      - amount
+      - paybackTime
+      - nominalInterestRate
+      - effectiveInterestRate
+      - monthlyPayment
+      - monthlyAdminFee
+      - loanOriginationFee
+      properties:
+        amount:
+          type: number
+          description: Amount offered to lend (including refinancing)
+          example: 200000
+        externalDebtConsolidationAmount:
+          type: number
+          description: Amount used exclusively to refinance existing loans with other lenders
+          example: 100000
+        internalDebtconsolidationAmount:
+          type: number
+          description: Amount used exclusively to refinance existing loans at lender
+          example: 10000
+        paybackTime:
+          type: number
+          description: Offered payback time in months
+          exclusiveMinimum: true
+          example: 60
+        nominalInterestRate:
+          type: number
+          description: Nominal interest rate of the offered loan
+          maximum: 0.16
+          example: 0.0525
+        effectiveInterestRate:
+          type: number
+          description: Effective interest rate of the offered loan
+          maximum: 0.16
+          example: 0.0538
+        amortizationType: 
+          type: string
+          description: Type of loan amortization plan. Default is annuity.
+          enum: 
+           - annuity
+           - straight
+        monthlyPayment:
+          type: number
+          description: Monthly payment of loan. If amortization type is straight, this is the average monthly payment. 
+          example: 3797
+        monthlyAdminFee:
+          type: number
+          description: Monthly default administration fee
+          example: 0
+        monthlyDirectDebetFee:
+          type: number
+          description: Monthly administration fee if customer chooses direct debet
+          example: 0
+        loanOriginationFee:
+          type: number
+          description: Start up fee when originating the loan
+          example: 0
+        totalRepaymentAmount:
+          type: number
+          description: Total amount to repay (when following repayment schedule)
+          example: 227820
+        eSignUrl:
+          type: string
+          format: url
+          description: Url for e-signing of the loan contract
+          example: https://www.bankXYZ.se/sign/
+        requiredSupplements: 
+          type: object
+          properties: 
+            copyOfId:
+              type: boolean
+              description: lender requires a copy of the customers ID card
+              example: false
+            paySlips:
+              type: boolean
+              description: copy of last N months payslips to support stated income is required by lender
+              example: false
+            employmentCertificate:
+              type: boolean
+              description: lender requires a employment certificate
+              example: false
+            companyReport:
+              type: boolean
+              description: lender requires income and balance statements from customer's company
+              example: false
+            bankAccountStatement:
+              type: boolean
+              description: lender requires bank account statement from customers main bank transaction account
+              example: false
+    payout: 
+      type: object
+      required: 
+      - amount
+      properties: 
+        amount: 
+          type: number
+          description: Loan amount paid out to the customer or to refinance customer's existing debt
+          example: 200000
+        payoutDate:
+          type: string
+          description: Date when the loan was paid out
+          format: date
+          example: "2020-03-15"
+        externalDebtConsolidationAmount:
+          type: number
+          description: Amount used exclusively to refinance existing loans with other lenders
+          example: 100000
+        internalDebtconsolidationAmount:
+          type: number
+          description: Amount used exclusively to refinance existing loans at lender
+          example: 10000
+    badRequestBody: 
+      type: object
+      properties:
+        message: 
+          type: string
+          example: "Invalid request body"
+        errors: 
+          type: array
+          items: 
+            type: object
+            properties: 
+              ref:
+                type: string
+                example: ""
+              message:
+                type: string
+                example: should have required property 'amount'
+    conflictBody:
+      type: object
+      properties: 
+        message: 
+          type: string
+          example: could not find loanApplicationId aa0f9ed0-4b11-11ea-abe2-35459edc2d2d
+      
+  securitySchemes:
+    basic_auth:
+      type: "http"
+      scheme: "basic"
