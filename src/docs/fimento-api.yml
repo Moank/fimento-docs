@@ -1,0 +1,221 @@
+openapi: 3.0.0
+
+info:
+  version: 0.1.0
+  title: Fimento REST API
+  x-logo:
+    url: 'https://wordpress.fimento.com/wp-content/uploads/2020/04/fimento_logo.svg'
+    altText: Fimento logo
+  description: |
+    **NOTE: The documentation is under costruction and new endpoints will be added**
+
+    # Introduction
+    Fimento API reference is used to accede the cloud platform for financial services.\
+    New properties and data models are continuously added, but the API will remain backwards compatible with this specification until deprecated.
+    This API is documented in [OpenAPI](https://www.openapis.org/) format and it is designed around [REST](https://developer.mozilla.org/en-US/docs/Glossary/REST) and uses standard [HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP) methods and status codes.
+
+    # Message formats
+    Requests are sent as JSON or in some cases form-encoded. String properties are encoded using UTF-8, and date properties are represented by UNIX Epoch time in milliseconds.
+
+    # IDs Definition
+    * `accountId`: Account internal unique ID
+    * `holderId`: Account's holder internal unique ID
+
+    # Authentication
+    *There are other authentication methods that might be activated for a particular customer due to interoperability requirements.*
+    <SecurityDefinitions />
+
+servers:
+- url: https://{customer}.fimento.com/
+  description: Production
+  variables:
+    customer:
+      default: acme
+- url: https://{customer}.test.fimento.com/
+  description: Testing
+  variables:
+    customer:
+      default: acme
+
+tags:
+  - name: Accounts
+    description: Manages customers’ accounts and transactions.
+
+paths:
+  /account:
+    post:
+      tags:
+        - Accounts
+      summary: Create a new account
+      requestBody:
+        $ref: "#/components/requestBodies/account"
+      responses:
+        200:
+          description: Return the newly created account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/account'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/invalidData'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/notFound'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serverError'
+      security:
+      - basic_auth: []
+
+  'account/{accountId}':
+    get:
+      tags:
+        - Accounts
+      summary: Get account by unique id
+      parameters:
+          - name: accountId
+            in: path
+            description: Account unique identifier
+            required: true
+      responses:
+        200:
+          description: Return the account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/account'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/notFound'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serverError'
+      security:
+      - basic_auth: []
+
+components:
+  requestBodies:
+    account:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - terms
+            - accountHolders
+            properties:
+              terms:
+                $ref: "#/components/schemas/terms"
+              accountHolders:
+                description: Information about the account holder(s)
+                type: array
+                minLength: 1
+                items:
+                  $ref: "#/components/schemas/accountHolder"
+
+  schemas:
+    terms:
+      description: Contains all the terms related to the account
+      type: object
+      required:
+      - amount
+      properties:
+        amount:
+          description: Initial amount borrowed in SEK
+          minimun: 0
+          exlusiveMinimun: true
+          example: 100000
+        nominalRate:
+          type: number
+          description: Yearly nominal rate of the account in percent
+          minimum: 0
+          exclusiveMinimum: true
+
+    accountHolder:
+      type: object
+      required:
+      - holderId
+      properties:
+        holderId:
+          descrition: Account holder identifier
+          type: string
+          example: 'ABCDEFGHILMNOPQRSTUVZ1234567'
+
+    account:
+      type: object
+      required:
+      - id
+      - terms
+      - accountHolders
+      properties:
+        id:
+          description: Account identifier
+          type: string
+          example: '1234567ABCDEFGHILMNOPQRSTUVZ'
+        terms:
+          $ref: "#/components/schemas/terms"
+        accountHolders:
+          description: Information about the account holder(s)
+          type: array
+          minLength: 1
+          items:
+            $ref: "#/components/schemas/accountHolder"
+
+    invalidData:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid Data"
+        status:
+          type: number
+          example: 400
+        errors:
+          type: array
+          items:
+            type: string
+            example: should have required property 'amount'
+
+    notFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Could not find account 1234567ABCDEFGHILMNOPQRSTUVZ
+        status:
+          type: number
+          example: 404
+
+    serverError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Internal Server Error
+        status:
+          type: number
+          example: 500
+
+  securitySchemes:
+    basic_auth:
+      type: "http"
+      scheme: "basic"
