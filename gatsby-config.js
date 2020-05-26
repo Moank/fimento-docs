@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: 'Fimento | API Docs',
+    title: 'Fimento',
     description: 'Some fanci description to update',
     author: 'Fimento',
   },
